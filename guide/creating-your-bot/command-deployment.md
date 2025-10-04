@@ -1,96 +1,97 @@
-# Registering slash commands
+Регистрация слэш-команд
 
 ::: tip
-For fully functional slash commands, you need three important pieces of code:
+Чтобы слэш-команды работали полностью, нужно три важных части кода:
+	1.	Отдельные файлы команд, где описаны их структура и логика.
+	2.	Обработчик команд, который динамически считывает файлы и выполняет нужную команду.
+	3.	Скрипт деплоя команд — он регистрирует ваши слэш-команды в Discord, чтобы они появились в интерфейсе.
 
-1. The [individual command files](slash-commands), containing their definitions and functionality.
-2. The [command handler](command-handling), which dynamically reads the files and executes the commands.
-3. The command deployment script, to register your slash commands with Discord so they appear in the interface.
+Эти шаги можно выполнять в любом порядке, но все три обязательны, чтобы команды функционировали корректно.
 
-These steps can be done in any order, but **all are required** before the commands are fully functional.
-
-This page details how to complete **Step 3**. Make sure to also complete the other pages linked above!
+На этой странице описан Шаг 3 — регистрация команд. Не забудьте также выполнить предыдущие шаги!
 :::
 
-## Command registration
+⸻
 
-Slash commands can be registered in two ways; in one specific guild, or for every guild the bot is in. We're going to look at single-guild registration first, as this is a good way to develop and test your commands before a global deployment.
+Регистрация команд
 
-Your application will need the `applications.commands` scope authorized in a guild for any of its slash commands to appear, and to be able to register them in a specific guild without error.
+Слэш-команды можно зарегистрировать двумя способами:
+	•	для одного конкретного сервера (guild) — удобно для тестов;
+	•	глобально — для всех серверов, где есть ваш бот.
 
-Slash commands only need to be registered once, and updated when the definition (description, options etc) is changed. As there is a daily limit on command creations, it's not necessary nor desirable to connect a whole client to the gateway or do this on every `ready` event. As such, a standalone script using the lighter REST manager is preferred. 
+Сначала разберём регистрацию для одного сервера, потому что так проще разрабатывать и тестировать команды перед глобальным развёртыванием.
 
-This script is intended to be run separately, only when you need to make changes to your slash command **definitions** - you're free to modify parts such as the execute function as much as you like without redeployment. 
+Вашему приложению нужно иметь scope applications.commands в сервере, чтобы слэш-команды появились, и чтобы вы могли их зарегистрировать без ошибок.
 
-### Guild commands
+⚠️ Слэш-команды регистрируются только один раз, и обновляются только при изменении их определения (описание, опции и т.д.).
+Поскольку есть дневной лимит на создание команд, не нужно подключать весь клиент к gateway или запускать регистрацию при каждом событии ready.
+Для этого лучше использовать отдельный REST-скрипт — лёгкий и выполняемый вручную при необходимости обновить команды.
 
-Create a `deploy-commands.js` file in your project directory. This file will be used to register and update the slash commands for your bot application.
+⸻
 
-Add two more properties to your `config.json` file, which we'll need in the deployment script:
+Команды для одного сервера (Guild commands)
 
-- `clientId`: Your application's client id ([Discord Developer Portal](https://discord.com/developers/applications) > "General Information" > application id)
-- `guildId`: Your development server's id ([Enable developer mode](https://support.discord.com/hc/en-us/articles/206346498) > Right-click the server title > "Copy ID")
+Создайте в корне проекта файл deploy-commands.js.
+Он будет использоваться для регистрации и обновления ваших слэш-команд.
 
-```json
+Добавьте в файл config.json два новых параметра:
+	•	clientId — ID вашего приложения (в Discord Developer Portal → “General Information” → Application ID)
+	•	guildId — ID вашего тестового сервера (включите режим разработчика, кликните правой кнопкой по названию сервера → “Copy 
 {
-	"token": "your-token-goes-here",
-	"clientId": "your-application-id-goes-here",
-	"guildId": "your-server-id-goes-here"
+	"token": "ваш-токен",
+	"clientId": "id-приложения",
+	"guildId": "id-сервера"
 }
-```
 
-With these defined, you can use the deployment script below:
+Теперь используйте следующий код для deploy-commands.js:
 
 <!-- eslint-skip -->
 
-```js
 const { REST, Routes } = require('discord.js');
 const { clientId, guildId, token } = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
 
 const commands = [];
-// Grab all the command folders from the commands directory you created earlier
+// Получаем все папки с командами
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
-	// Grab all the command files from the commands directory you created earlier
+	// Получаем все файлы команд из папки
 	const commandsPath = path.join(foldersPath, folder);
 	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-	// Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
+	// Берём JSON-структуру каждой команды
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath);
 		if ('data' in command && 'execute' in command) {
 			commands.push(command.data.toJSON());
 		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+			console.log(`[WARNING] В команде ${filePath} отсутствует свойство "data" или "execute".`);
 		}
 	}
 }
 
-// Construct and prepare an instance of the REST module
+// Создаём экземпляр REST клиента
 const rest = new REST().setToken(token);
 
-// and deploy your commands!
+// Регистрируем команды
 (async () => {
 	try {
-		console.log(`Started refreshing ${commands.length} application (/) commands.`);
+		console.log(`Начинается обновление ${commands.length} слэш-команд.`);
 
-		// The put method is used to fully refresh all commands in the guild with the current set
+		// Метод PUT полностью обновляет список команд на сервере
 		const data = await rest.put(
 			Routes.applicationGuildCommands(clientId, guildId),
 			{ body: commands },
 		);
 
-		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+		console.log(`Успешно обновлено ${data.length} слэш-команд.`);
 	} catch (error) {
-		// And of course, make sure you catch and log any errors!
 		console.error(error);
 	}
 })();
-```
 
 Once you fill in these values, run `node deploy-commands.js` in your project directory to register your commands to the guild specified. If you see the success message, check for the commands in the server by typing `/`! If all goes well, you should be able to run them and see your bot's response in Discord!
 

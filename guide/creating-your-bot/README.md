@@ -1,20 +1,20 @@
-# Configuration files
+# Конфигурационные файлы
 
-Once you [add your bot to a server](/preparations/adding-your-bot-to-servers.md), the next step is to start coding and get it online! Let's start by creating a config file for your client token and a main file for your bot application.
+После того как вы [добавьте своего бота на сервер](/preparations/adding-your-bot-to-servers.md) следующим шагом будет начать кодировать и вывести его онлайн! Давайте начнем с создания конфигурационного файла для вашего клиентского токена и основного файла для вашего бота.
 
-As explained in the ["What is a token, anyway?"](/preparations/setting-up-a-bot-application.md#what-is-a-token-anyway) section, your token is essentially your bot's password, and you should protect it as best as possible. This can be done through a `config.json` file or by using environment variables.
+Как объясняется в разделе ["Что такое токен, собственно?"](/preparations/setting-up-a-bot-application.md#what-is-a-token-anyway) ваш токен по сути является паролем вашего бота, и вы должны защищать его максимально тщательно. Это можно сделать через файл config.json или с помощью переменных окружения.
 
-Open your application in the [Discord Developer Portal](https://discord.com/developers/applications) and go to the "Bot" page to copy your token.
+Откройте ваше приложение в [Портал разработчика Discord](https://discord.com/developers/applications) и перейдите на страницу «Bot», чтобы скопировать ваш токен.
 
-## Using `config.json`
+## Использование `config.json`
 
-Storing data in a `config.json` file is a common way of keeping your sensitive values safe. Create a `config.json` file in your project directory and paste in your token. You can access your token inside other files by using `require()`.
+Хранение данных в файле `config.json` — это распространённый способ безопасного хранения конфиденциальной информации. Создайте файл `config.json` в директории вашего проекта и вставьте туда ваш токен. Вы сможете получить доступ к токену в других файлах с помощью `require()`.
 
 :::: code-group
 ::: code-group-item config.json
 ```json
 {
-	"token": "your-token-goes-here"
+	"token": "ваш-токен-здесь"
 }
 ```
 :::
@@ -28,21 +28,21 @@ console.log(token);
 ::::
 
 ::: danger
-If you're using Git, you should not commit this file and should [ignore it via `.gitignore`](/creating-your-bot/#git-and-gitignore).
+Если вы используете Git, не следует добавлять этот файл в коммит, и вы должны… [игнорировать его с помощью `.gitignore`](/creating-your-bot/#git-and-gitignore).
 :::
 
-## Using environment variables
+## Использование переменных окружения
 
-Environment variables are special values for your environment (e.g., terminal session, Docker container, or environment variable file). You can pass these values into your code's scope so that you can use them.
+Переменные окружения — это специальные значения для вашей среды (например, сеанса терминала, контейнера Docker или файла переменных окружения). Вы можете передавать эти значения в область видимости вашего кода, чтобы использовать их.
 
-One way to pass in environment variables is via the command line interface. When starting your app, instead of `node index.js`, use `TOKEN=your-token-goes-here node index.js`. You can repeat this pattern to expose other values as well.
+Один из способов передать переменные окружения — через интерфейс командной строки. При запуске вашего приложения вместо `node index.js`, используйте `TOKEN=ваш-токен-здесь node index.js`. Вы можете использовать этот же способ для передачи и других значений.
 
-You can access the set values in your code via the `process.env` global variable, accessible in any file. Note that values passed this way will always be strings and that you might need to parse them to a number, if using them to do calculations.
+Вы можете получить доступ к установленным значениям в вашем коде через `process.env` глобальную переменную, доступную в любом файле. Обратите внимание, что значения, переданные таким образом, всегда будут строками, и их может понадобиться преобразовать в число, если вы собираетесь использовать их для вычислений.
 
 :::: code-group
 ::: code-group-item Command line
 ```sh:no-line-numbers
-A=123 B=456 DISCORD_TOKEN=your-token-goes-here node index.js
+A=123 B=456 DISCORD_TOKEN=ваш-токен-здесь node index.js
 ```
 :::
 ::: code-group-item Usage
@@ -54,11 +54,11 @@ console.log(process.env.DISCORD_TOKEN);
 :::
 ::::
 
-### Using dotenv
+### Использование dotenv
 
-Another common approach is storing these values in a `.env` file. This spares you from always copying your token into the command line. Each line in a `.env` file should hold a `KEY=value` pair.
+Другой распространённый подход — хранить эти значения в файле `.env`. Это избавляет вас от необходимости постоянно вставлять токен в командную строку. Каждая строка в файле `.env` должна содержать пару `КЛЮЧ=значение`.
 
-You can use the [`dotenv` package](https://www.npmjs.com/package/dotenv) for this. Once installed, require and use the package to load your `.env` file and attach the variables to `process.env`:
+Вы можете использовать пакет [`dotenv` package](https://www.npmjs.com/package/dotenv) для этого. После установки подключите и используйте пакет, чтобы загрузить ваш файл `.env` и присвоить переменные объекту `process.env`:
 
 :::: code-group
 ::: code-group-item npm
@@ -78,8 +78,8 @@ pnpm add dotenv
 :::
 ::: code-group-item bun
 ```sh:no-line-numbers
-# dotenv is not necessary with Bun
-# Bun reads .env files automatically
+# dotenv не обязателен при использовании Bun
+# Bun автоматически считывает файлы .env
 ```
 :::
 ::::
@@ -89,7 +89,7 @@ pnpm add dotenv
 ```
 A=123
 B=456
-DISCORD_TOKEN=your-token-goes-here
+DISCORD_TOKEN=ваш-токен-здесь
 ```
 :::
 ::: code-group-item Usage
@@ -106,11 +106,12 @@ console.log(process.env.DISCORD_TOKEN);
 ::::
 
 ::: danger
-If you're using Git, you should not commit this file and should [ignore it via `.gitignore`](/creating-your-bot/#git-and-gitignore).
+Если вы используете Git, не следует добавлять этот файл в коммит, и вы должны игнорировать его с помощью [игнорировать его с помощью файла `.gitignore`](/creating-your-bot/#git-and-gitignore).
 :::
 
 ::: details Online editors (Glitch, Heroku, Replit, etc.)
-While we generally do not recommend using online editors as hosting solutions, but rather invest in a proper virtual private server, these services do offer ways to keep your credentials safe as well! Please see the respective service's documentation and help articles for more information on how to keep sensitive values safe:
+Хотя мы в целом не рекомендуем использовать онлайн-редакторы в качестве решений для хостинга и советуем инвестировать в полноценный виртуальный приватный сервер, эти сервисы также предлагают способы безопасного хранения ваших учетных данных! Пожалуйста, ознакомьтесь с документацией и справочными статьями соответствующего сервиса для получения дополнительной информации о том, как защитить конфиденциальные значения.
+:
 
 - Glitch: [Storing secrets in .env](https://help.glitch.com/hc/articles/16287550167437)
 - Heroku: [Configuration variables](https://devcenter.heroku.com/articles/config-vars)
@@ -119,9 +120,9 @@ While we generally do not recommend using online editors as hosting solutions, b
 
 ## Git and `.gitignore`
 
-Git is a fantastic tool to keep track of your code changes and allows you to upload progress to services like [GitHub](https://github.com/), [GitLab](https://about.gitlab.com/), or [Bitbucket](https://bitbucket.org/product). While this is super useful to share code with other developers, it also bears the risk of uploading your configuration files with sensitive values!
+Git — это отличный инструмент для отслеживания изменений в вашем коде и позволяет загружать прогресс на такие сервисы, как [GitHub](https://github.com/), [GitLab](https://about.gitlab.com/), или [Bitbucket](https://bitbucket.org/product). Хотя это очень удобно для совместного использования кода с другими разработчиками, существует риск случайной загрузки ваших конфигурационных файлов с конфиденциальными данными!
 
-You can specify files that Git should ignore in its versioning systems with a `.gitignore` file. Create a `.gitignore` file in your project directory and add the names of the files and folders you want to ignore:
+Вы можете указать файлы, которые Git должен игнорировать в системе версионирования, с помощью файла `.gitignore` файл. Создайте файл `.gitignore` в директории вашего проекта и добавьте в него имена файлов и папок, которые вы хотите игнорировать:
 
 ```
 node_modules
@@ -130,7 +131,7 @@ config.json
 ```
 
 ::: tip
-Aside from keeping credentials safe, `node_modules` should be included here. Since this directory can be restored based on the entries in your `package.json` and `package-lock.json` files by running `npm install`, it does not need to be included in Git.
+Помимо защиты учетных данных, `node_modules` следует включить сюда. Поскольку этот каталог можно восстановить на основе записей в ваших `package.json` и `package-lock.json`, выполняя `npm install`, его не нужно добавлять в Git.
 
-You can specify quite intricate patterns in `.gitignore` files, check out the [Git documentation on `.gitignore`](https://git-scm.com/docs/gitignore) for more information!
+Вы можете указывать достаточно сложные шаблоны в файлах `.gitignore`. Подробнее смотрите в [Документации Git по `.gitignore`](https://git-scm.com/docs/gitignore) for more information!
 :::
